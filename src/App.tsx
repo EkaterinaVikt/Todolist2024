@@ -5,7 +5,7 @@ import {v1} from "uuid";
 import {AddItemForm} from "./AddItemForm";
 import {AppBar, Button, Container, Grid, IconButton, Paper, Toolbar, Typography} from "@mui/material";
 import MenuIcon from '@mui/icons-material/Menu';
-import { styled } from '@mui/material/styles'
+import {styled} from '@mui/material/styles'
 
 export type FilterValuesType = "all" | "completed" | "active";
 
@@ -15,7 +15,7 @@ export type ToDoListType = {
     filter: FilterValuesType
 }
 
-type TaskStateType = {
+export type TaskStateType = {
     [key: string]: Array<TaskType>
 }
 
@@ -57,6 +57,10 @@ function App() {
 
     }
 
+    function changeTaskTitle(newTitle: string, id: string) {
+        todolists.find(t => t.id === id)
+    }
+
     function changeFilter(value: FilterValuesType, todolistId: string) {
         let todolist = todolists.find(tl => tl.id === todolistId)
         if (todolist) {
@@ -65,8 +69,11 @@ function App() {
         }
     }
 
-    function changeTaskTitle(newTitle: string, id: string) {
-        todolists.find(t => t.id === id)
+    let removeTodolist = (todolistId: string) => {
+        let filteredTodolists = todolists.filter(tl => tl.id !== todolistId);
+        setTodolists(filteredTodolists);
+        delete tasksObj[todolistId];
+        setTasks({...tasksObj});
     }
 
     function changeTodolistTitle(newTitle: string, id: string) {
@@ -75,6 +82,19 @@ function App() {
             todolist.title = newTitle;
             setTodolists([...todolists])
         }
+    }
+
+    function addTodolist(title: string) {
+        let todolist: ToDoListType = {
+            id: v1(),
+            title: title,
+            filter: "all"
+        }
+        setTodolists([todolist, ...todolists])
+        setTasks({
+            ...tasksObj,
+            [todolist.id]: []
+        })
     }
 
     let todolistId1 = v1();
@@ -101,30 +121,11 @@ function App() {
         ]
     })
 
-    let removeTodolist = (todolistId: string) => {
-        let filteredTodolists = todolists.filter(tl => tl.id !== todolistId);
-        setTodolists(filteredTodolists);
-        delete tasksObj[todolistId];
-        setTasks({...tasksObj});
-    }
 
-    function addTodolist(title: string) {
-        let todolist: ToDoListType = {
-            id: v1(),
-            title: title,
-            filter: "all"
-        }
-        setTodolists([todolist, ...todolists])
-        setTasks({
-            ...tasksObj,
-            [todolist.id]: []
-        })
-    }
-
-    const Item = styled(Paper)(({ theme }) => ({
+    const Item = styled(Paper)(({theme}) => ({
         backgroundColor: '#fff',
         ...theme.typography.body2,
-       padding: theme.spacing(1),
+        padding: theme.spacing(1),
         textAlign: 'justify',
         color: theme.palette.text.secondary,
         ...theme.applyStyles('dark', {
@@ -152,10 +153,10 @@ function App() {
                 </Toolbar>
             </AppBar>
             <Container fixed>
-                <Grid container spacing={"2"} style={ {padding: "2em"} }>
+                <Grid container spacing={"2"} style={{padding: "2em"}}>
                     <AddItemForm addItem={addTodolist}/>
                 </Grid>
-                <Grid container spacing={"2"} style={ {padding: "2em"} }>
+                <Grid container spacing={"2"} style={{padding: "2em"}}>
                     {todolists.map((tl) => {
 
                         let tasksForTodoList = tasksObj[tl.id];
@@ -167,7 +168,7 @@ function App() {
                             tasksForTodoList = tasksForTodoList.filter(t => !t.isDone)
                         }
 
-                        return <Item >
+                        return <Item>
 
                             <ToDoList
                                 key={tl.id}
